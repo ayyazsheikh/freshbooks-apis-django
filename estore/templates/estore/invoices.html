@@ -1,0 +1,73 @@
+{% extends 'estore/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="container">
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Invoices</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="row">
+            <div class="col-lg-12 mt-3 mb-4 mb-lg-0">
+                <div class="table-responsive mb-4">
+                    <table class="table">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Invoice Number</strong></th>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Client</strong></th>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Issued Date</strong></th>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Due Date</strong></th>        
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Amount</strong></th>
+                                <th class="border-0" scope="col"> <strong
+                                    class="text-small text-uppercase">Status</strong></th>
+                                <th class="border-0" scope="col"> </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for invoice in invoices %}
+                            <tr>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{invoice.invoice_number}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{invoice.organization}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{invoice.created_at}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{invoice.due_date}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{invoice.amount.amount}} {{invoice.amount.code}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{invoice.due_date}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <a class="btn btn-primary" href="{% url 'estore:invoice' invoice.id %}">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock content %}

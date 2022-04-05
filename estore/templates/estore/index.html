@@ -1,0 +1,27 @@
+{% extends 'estore/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+    <section class="pt-5 mt-5">
+        <div class="row">
+            {% if categories %}
+            {% for category in categories %}
+
+            <div class="col-md-4 mb-4 mb-md-0">
+                <a class="category-item" href="{% url 'estore:category-products' category.url_slug %}">
+                    <img class="img-fluid" src="{{ category.category_image.url }}" alt="{{ category.title }}">
+                    <strong class="category-item-title">{{ category.title }}</strong>
+                </a>
+            </div>
+
+            {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+
+    <br>
+</div>
+
+{% endblock content %}

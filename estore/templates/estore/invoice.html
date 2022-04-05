@@ -1,0 +1,116 @@
+{% extends 'estore/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="container">
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Invoice</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="container mb-5 alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <h4 class="h4 text-uppercase">Invoice Details</h4>
+        <br />
+        <p class="ml-5 medium"><strong>Invoice Number: </strong>{{invoice.invoice_number}}</p>
+        <p class="ml-5 medium"><strong>Amount: </strong>{{invoice.amount.amount}} {{invoice.amount.code}}</p>
+
+
+        <h4 class="h4 text-uppercase mt-5">Items</h4>
+
+        <div class="row">
+            <div class="col-lg-8 mt-3 mb-4 mb-lg-0">
+                <div class="table-responsive mb-4">
+                    <table class="table">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Name</strong></th>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Rate</strong></th>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Quantity</strong></th>
+                                <th class="border-0" scope="col"> <strong
+                                        class="text-small text-uppercase">Total</strong></th>
+                                <th class="border-0" scope="col"> </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for item in invoice.lines %}
+                            <tr>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{item.name}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{item.unit_cost.amount}} {{item.unit_cost.code}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{item.qty}}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">{{item.amount.amount}} {{item.amount.code}}</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+            Send by email
+          </button>
+        
+          <!-- The Modal -->
+          <div class="modal" id="myModal">
+            <div class="modal-dialog">
+              <div class="modal-content">
+              
+                <!-- Modal Header -->
+                <div class="modal-header">
+                  <h4 class="modal-title">Email Status</h4>
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                
+                <!-- Modal body -->
+                <div class="modal-body">
+                  {% if email.status == 2 %}
+                    <p>Email sent successfully!</p>
+                  {% else %}
+                    <p>Not sent, try again!</p>
+                  {% endif %}
+                </div>
+                
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        
+    </section>
+</div>
+{% endblock content %}

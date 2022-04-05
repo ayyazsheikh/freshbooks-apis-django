@@ -1,0 +1,74 @@
+{% extends 'estore/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="container">
+  <section class="py-5 bg-light">
+    <div class="container">
+      <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+        <div class="col-lg-6">
+          <h1 class="h2 text-uppercase mb-0">Shop - {{category.title}}</h1>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="py-5">
+    <div class="container p-0">
+      <div class="row">
+        <div class="col-lg-3 order-2 order-lg-1">
+          <h5 class="text-uppercase mb-4">Categories</h5>
+
+          {% if categories %}
+          {% for cat in categories %}
+          <a href="{% url 'estore:category-products' cat.url_slug %}">
+            <div class="py-2 px-4 {% if category == cat %}bg-dark text-white {% else %}bg-light{% endif %} mb-3">
+              <strong class="small text-uppercase font-weight-bold">{{cat.title}}</strong>
+            </div>
+          </a>
+          {% endfor %}
+          {% endif %}
+        </div>
+
+
+        <div class="col-lg-9 order-1 order-lg-2 mb-5 mb-lg-0">
+
+          <div class="row" style="margin-top: 45px;">
+
+            {% if products %}
+            {% for product in products %}
+
+            <div class="col-lg-4 col-sm-6">
+              <div class="product text-center">
+                <div class="mb-3 position-relative">
+
+                  <div class="badge text-white badge-"></div>
+
+                  <img class="img-fluid w-100" src="{{product.product_image.url}}" alt="{{product.title}}">
+
+                  <div class="product-overlay">
+                    <ul class="mb-0 list-inline">
+                      <li class="list-inline-item m-0 p-0">
+                        <form action="{% url 'estore:add-to-cart' %}">
+                          <input type="hidden" name="prod_id" value="{{product.id}}" id="product_id">
+                          <button type="submit" class="btn btn-sm btn-dark">Add to Cart</button>
+                        </form>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <h6>{{product.title}}</h6>
+                <p class="small text-muted">${{product.price|intcomma}}</p>
+              </div>
+            </div>
+
+            {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock content %}
