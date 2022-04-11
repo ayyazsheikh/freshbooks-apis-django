@@ -13,7 +13,7 @@ headers = {
 }
 
 ACCOUNT_ID = '<account-id>'
-CUSTOMER_ID = <customer-id>
+CUSTOMER_ID = 000000
 
 
 def is_authenticated():
