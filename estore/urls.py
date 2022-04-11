@@ -17,6 +17,8 @@ urlpatterns = [
     path('invoices/', views.invoices, name="invoices"),
     path('invoice/', views.generate_invoice, name="generate-invoice"),
     path('invoice/<invoice_id>', views.invoice, name="invoice"),
+    path('email/<invoice_id>', views.email, name="email"),
+    path('payment/<invoice_id>', views.payment, name="payment"),
 
     path('<slug:url_slug>/', views.category_products, name="category-products")
 ]

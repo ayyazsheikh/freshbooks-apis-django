@@ -1,9 +1,10 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from estore.models import Category, Product, Cart
+from django.contrib import messages
+from datetime import date
+import decimal
 import requests
 import json
-from django.contrib import messages
-import decimal
 
 
 headers = {
@@ -11,6 +12,16 @@ headers = {
     'Authorization': 'Bearer <access-token>'
 }
 
+ACCOUNT_ID = '<account-id>'
+CUSTOMER_ID = <customer-id>
+
+
+def is_authenticated():
+    url = "https://api.freshbooks.com/auth/api/v1/users/me"
+    response = requests.request("GET", url, headers=headers)
+    if response.status_code == 200:
+        return True
+    return False    
 
 def home(request):
     categories = Category.objects.filter()[:3]
@@ -102,7 +113,10 @@ def decrement_cart(request, cart_id):
 
 
 def invoices(request):
-    url = "https://api.freshbooks.com/accounting/account/5odNL6/invoices/invoices?include[]=lines"
+    if not is_authenticated():
+        return render(request, 'estore/no_auth.html')
+
+    url = "https://api.freshbooks.com/accounting/account/5odNL6/invoices/invoices?include[]=lines&per_page=100"
     response = requests.request("GET", url, headers=headers)
     context = {
         'invoices': response.json()['response']['result']['invoices']
@@ -111,11 +125,15 @@ def invoices(request):
 
 
 def generate_invoice(request):
+    if not is_authenticated():
+        return render(request, 'estore/no_auth.html')
+
     url = "https://api.freshbooks.com/accounting/account/5odNL6/invoices/invoices?include[]=lines"
+    today = date.today()
     payload = {
         "invoice": {
-            "customerid": 326310,
-            "create_date": "2022-03-01",
+            "customerid": CUSTOMER_ID,
+            "create_date": today.strftime("%Y-%m-%d"),
             "lines": []
         }
     }
@@ -133,6 +151,8 @@ def generate_invoice(request):
 
 
 def invoice(request, invoice_id):
+    if not is_authenticated():
+        return render(request, 'estore/no_auth.html')
 
     url = "https://api.freshbooks.com/accounting/account/5odNL6/invoices/invoices/"+invoice_id+"?include[]=lines"
    
@@ -144,53 +164,40 @@ def invoice(request, invoice_id):
     return render(request, 'estore/invoice.html', context)
 
 
-def invoice2(request):
+def email(request, invoice_id):
+    url = "https://api.freshbooks.com/accounting/account/"+ACCOUNT_ID+"/invoices/invoices/"+invoice_id
 
-    url = "https://api.freshbooks.com/accounting/account/5odNL6/invoices/invoices?include[]=lines"
-   
-    payload = {
+    payload = json.dumps({
         "invoice": {
-            "customerid": 326310,
-            "create_date": "2022-03-01",
-            "lines": []
+            "email_recipients": [
+               request.POST.get('email')
+            ]    
+        ,
+        "action_email": True
         }
-    }
-
-    cart = Cart.objects.all()
-    for item in cart:
-        newItem = {"name": item.product.title, "qty": item.quantity, "unit_cost": {
-            "amount": str(item.product.price), "code": "USD"}}
-        payload['invoice']['lines'].append(newItem)
-        item.delete()
-
+    })
     
+    response = requests.request("PUT", url, headers=headers, data=payload)
 
-    response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+    messages.success(request, 'The email has been sent successfully using the Freshbooks API.')
+    return redirect('estore:invoice', invoice_id=invoice_id)
 
-    #invid = response.json()['response']['result']['invoice']['invoiceid']
-    #print(invid)
-    print(response.json()['response'])
 
-    payload2 = json.dumps({
-        "invoice": {
-            # "email_recipients": [
-            #   "recipient_email@gmail.com"
-            # ],
-            # "invoice_customized_email": {
-            #   "subject": "<YOUR COMPANY NAME> has sent you an invoice (0000027)",
-            #   "body": "<YOUR COMPANY NAME> sent you invoice (0000027) for <INVOICE AMOUNT> that's due on <DUE DATE>"
-            # },
-            "action_email": True
+def payment(request, invoice_id):
+    url = "https://api.freshbooks.com/accounting/account/"+ACCOUNT_ID+"/payments/payments"
+
+    today = date.today()
+    payload = json.dumps({
+        "payment": {
+            "invoiceid": invoice_id,
+            "amount": {
+                "amount": request.POST.get('amount')
+            },
+        "date": today.strftime("%Y-%m-%d")
         }
-        })
-    url2 = f"https://api.freshbooks.com/accounting/account/5odNL6/invoices/invoices/{invid}"
-    print(url2)
+    })
+    
+    response = requests.request("POST", url, headers=headers, data=payload)
 
-    response2 = requests.request("PUT", url2, headers=headers, data=payload2)
-
-    print("response",response2.json())
-
-    messages.success(request, 'The invoice has been generated successfully using the Freshbooks API.')
-    context = {'invoice': response.json()['response']['result']['invoice'], 'email': response2.json()['response']['result']['invoice'] }
-    return render(request, 'estore/invoice.html', context)
-
+    messages.success(request, 'The payment has been recorded successfully using the Freshbooks API.')
+    return redirect('estore:invoice', invoice_id=invoice_id)
